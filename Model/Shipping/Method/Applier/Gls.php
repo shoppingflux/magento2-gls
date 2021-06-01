@@ -56,6 +56,11 @@ class Gls extends AbstractApplier
     private $glsWebService;
 
     /**
+     * @var array
+     */
+    private $relayPointData = [];
+
+    /**
      * @param ConfigInterface $config
      * @param ResultFactory $resultFactory
      * @param ResourceConnection $resource
@@ -127,49 +132,64 @@ class Gls extends AbstractApplier
 
     /**
      * @param string $relayPointId
+     * @return array|false
+     */
+    private function getRelayPointData($relayPointId)
+    {
+        if (!isset($this->relayPointData[$relayPointId])) {
+            $this->relayPointData[$relayPointId] = false;
+
+            $relayPointId = trim($relayPointId);
+            $soapClient = new \SoapClient($this->glsWebService->getUrlWsdl());
+
+            $apiUserName = trim(
+                $this->glsHelper->getConfigValue(
+                    static::CONFIG_FIELD_GLS_API_USERNAME,
+                    static::CONFIG_GROUP_GLS,
+                    static::CONFIG_SECTION_GLS_CARRIERS
+                )
+            );
+
+            $apiPassword = trim(
+                $this->glsHelper->getConfigValue(
+                    static::CONFIG_FIELD_GLS_API_PASSWORD,
+                    static::CONFIG_GROUP_GLS,
+                    static::CONFIG_SECTION_GLS_CARRIERS
+                )
+            );
+
+            if (!empty($relayPointId) && !empty($apiUserName) && !empty($apiPassword)) {
+                $result = $soapClient->__soapCall(
+                    static::GLS_API_ENDPOINT_FIND_RELAY_POINT_BY_ID,
+                    [
+                        [
+                            'Credentials' => [
+                                'UserName' => $apiUserName,
+                                'Password' => $apiPassword,
+                            ],
+                            'ParcelShopId' => $relayPointId,
+                        ],
+                    ]
+                );
+
+                $result = (array) json_decode(json_encode($result), true);
+
+                if (trim($result['ParcelShop']['ParcelShopId'] ?? '') === $relayPointId) {
+                    $this->relayPointData[$relayPointId] = $result;
+                }
+            }
+        }
+
+        return $this->relayPointData[$relayPointId];
+    }
+
+    /**
+     * @param string $relayPointId
      * @return bool
      */
     private function isExistingRelayPointId($relayPointId)
     {
-        $relayPointId = trim($relayPointId);
-        $soapClient = new \SoapClient($this->glsWebService->getUrlWsdl());
-
-        $apiUserName = trim(
-            $this->glsHelper->getConfigValue(
-                static::CONFIG_FIELD_GLS_API_USERNAME,
-                static::CONFIG_GROUP_GLS,
-                static::CONFIG_SECTION_GLS_CARRIERS
-            )
-        );
-
-        $apiPassword = trim(
-            $this->glsHelper->getConfigValue(
-                static::CONFIG_FIELD_GLS_API_PASSWORD,
-                static::CONFIG_GROUP_GLS,
-                static::CONFIG_SECTION_GLS_CARRIERS
-            )
-        );
-
-        if (empty($relayPointId) || empty($apiUserName) || empty($apiPassword)) {
-            return false;
-        }
-
-        $result = $soapClient->__soapCall(
-            static::GLS_API_ENDPOINT_FIND_RELAY_POINT_BY_ID,
-            [
-                [
-                    'Credentials' => [
-                        'UserName' => $apiUserName,
-                        'Password' => $apiPassword,
-                    ],
-                    'ParcelShopId' => $relayPointId,
-                ],
-            ]
-        );
-
-        $result = (array) json_decode(json_encode($result), true);
-
-        return trim($result['ParcelShop']['ParcelShopId'] ?? '') === $relayPointId;
+        return is_array($this->getRelayPointData($relayPointId));
     }
 
     /**
@@ -310,6 +330,17 @@ class Gls extends AbstractApplier
         if (isset($additionalData['relay_point_id'])) {
             // The GLS module will not apply the relay point data if any of the values is empty.
             $company = trim($quoteShippingAddress->getCompany());
+
+            if (
+                empty($company)
+                && $this->getConfig()->shouldImportMissingRelayPointNamesFromGlsApi($configData)
+            ) {
+                $relayPointData = $this->getRelayPointData($additionalData['relay_point_id']);
+
+                if (isset($relayPointData['ParcelShop']['Address']['Name1'])) {
+                    $company = trim($relayPointData['ParcelShop']['Address']['Name1'] ?? '');
+                }
+            }
 
             if (empty($company)) {
                 $company = '__';

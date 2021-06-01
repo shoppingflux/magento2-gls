@@ -13,6 +13,7 @@ class Gls extends AbstractConfig implements GlsInterface
     const KEY_IS_HOME_PLUS_DELIVERY_ENABLED = 'is_home_plus_delivery_enabled';
     const KEY_IS_HOME_DELIVERY_ENABLED = 'is_home_delivery_enabled';
     const KEY_CHECK_RELAY_POINT_IDS_WITH_GLS_API = 'check_relay_point_ids_with_gls_api';
+    const KEY_IMPORT_MISSING_RELAY_POINT_NAMES_FROM_GLS_API = 'import_missing_relay_point_names_from_gls_api';
 
     protected function getBaseFields()
     {
@@ -43,6 +44,22 @@ class Gls extends AbstractConfig implements GlsInterface
                         'uncheckedNotice' => __('Pickup point IDs made of 10 digits will be considered valid.'),
                         'isCheckedByDefault' => true,
                         'sortOrder' => 200,
+                    ]
+                ),
+                $this->fieldFactory->create(
+                    Checkbox::TYPE_CODE,
+                    [
+                        'name' => self::KEY_IMPORT_MISSING_RELAY_POINT_NAMES_FROM_GLS_API,
+                        'isRequired' => true,
+                        'label' => __('Import Missing Pickup Point Names Using the GLS API'),
+                        'checkedNotice' => __(
+                            'Pickup point names will be imported using the GLS API when the "Company" field is empty.'
+                        ),
+                        'uncheckedNotice' => __(
+                            '"__" will be used as the pickup point name when the "Company" field is empty.'
+                        ),
+                        'isCheckedByDefault' => false,
+                        'sortOrder' => 250,
                     ]
                 ),
                 $this->fieldFactory->create(
@@ -129,5 +146,10 @@ class Gls extends AbstractConfig implements GlsInterface
     public function shouldCheckRelayPointIdsWithGlsApi(DataObject $configData)
     {
         return (bool) $this->getFieldValue(static::KEY_CHECK_RELAY_POINT_IDS_WITH_GLS_API, $configData);
+    }
+
+    public function shouldImportMissingRelayPointNamesFromGlsApi(DataObject $configData)
+    {
+        return (bool) $this->getFieldValue(static::KEY_IMPORT_MISSING_RELAY_POINT_NAMES_FROM_GLS_API, $configData);
     }
 }

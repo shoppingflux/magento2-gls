@@ -36,4 +36,10 @@ interface GlsInterface extends ConfigInterface
      * @return bool
      */
     public function shouldCheckRelayPointIdsWithGlsApi(DataObject $configData);
+
+    /**
+     * @param DataObject $configData
+     * @return bool
+     */
+    public function shouldImportMissingRelayPointNamesFromGlsApi(DataObject $configData);
 }
