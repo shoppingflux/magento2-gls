@@ -73,7 +73,7 @@ class Gls extends AbstractConfig implements GlsInterface
                             . __('Enabled options above have priority.'),
                         'uncheckedNotice' => __('Enable to apply when the shipping address is compatible.')
                             . ' '
-                            . ('Enabled options above have priority.'),
+                            . __('Enabled options above have priority.'),
                         'isCheckedByDefault' => true,
                         'sortOrder' => 300,
                     ]
