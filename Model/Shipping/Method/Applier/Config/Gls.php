@@ -30,7 +30,10 @@ class Gls extends AbstractConfig implements GlsInterface
                         'checkedNotice' => __('Applied when a valid relay point ID is available.'),
                         'uncheckedNotice' => __('Enable to apply when a valid relay point ID is available.'),
                         'isCheckedByDefault' => true,
-                        'checkedDependentFieldNames' => [ self::KEY_CHECK_RELAY_POINT_IDS_WITH_GLS_API ],
+                        'checkedDependentFieldNames' => [ 
+                            self::KEY_CHECK_RELAY_POINT_IDS_WITH_GLS_API,
+                            self::KEY_IMPORT_MISSING_RELAY_POINT_NAMES_FROM_GLS_API,
+                        ],
                         'sortOrder' => 100,
                     ]
                 ),
