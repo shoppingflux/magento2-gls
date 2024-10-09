@@ -1,12 +1,12 @@
 {
     "name": "shoppingfeed/magento2-gls",
     "type": "magento2-module",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "license": "OSL-3.0",
     "description": "GLS shipping method applier for the Shopping Feed Magento 2 module.",
     "require": {
         "ext-soap": "*",
-        "shoppingfeed/magento2-manager": ">=0.28.0"
+        "shoppingfeed/magento2-manager": ">=1.7.0"
     },
     "autoload": {
         "files": [
