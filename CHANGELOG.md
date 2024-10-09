@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0] - 2024-10-09
+### Changed
+- Use new relay point ID field
+
 ## [1.1.1] - 2021-06-03
 ### Fixed
 - Do not display relay point fields if relay point delivery is disabled
