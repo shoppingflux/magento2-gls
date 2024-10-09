@@ -234,6 +234,20 @@ class Gls extends AbstractApplier
         return $baseCode . '_shopping_feed';
     }
 
+    /**
+     * @param MarketplaceAddressInterface $address
+     * @return string|null
+     */
+    private function getAddressRelayPointId(MarketplaceAddressInterface $address)
+    {
+        return (
+            empty($relayPointId = trim($address->getRelayPointId()))
+            && empty($relayPointId = trim($address->getMiscData()))
+        )
+            ? null
+            : $relayPointId;
+    }
+
     public function applyToQuoteShippingAddress(
         MarketplaceOrderInterface $marketplaceOrder,
         MarketplaceAddressInterface $marketplaceShippingAddress,
@@ -246,7 +260,7 @@ class Gls extends AbstractApplier
         $isRelayPointDelivery = false;
 
         if ($config->isRelayPointDeliveryEnabled($configData)
-            && !empty($relayPointId = trim($marketplaceShippingAddress->getMiscData()))
+            && !empty($relayPointId = $this->getAddressRelayPointId($marketplaceShippingAddress))
             && $this->isValidRelayPointId($relayPointId, $configData)
         ) {
             $chosenMethodCode = $this->getAvailableMethodCodeByDeliveryBaseCode(
